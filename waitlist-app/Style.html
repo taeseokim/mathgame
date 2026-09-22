@@ -1,0 +1,85 @@
+<style>
+  :root {
+    --primary: #4f46e5;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --waiting: #f59e0b;
+    --called: #ef4444;
+    --progress: #3b82f6;
+    --done: #10b981;
+    --border: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 20px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 480px;
+    margin: 0 auto 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  h1 { font-size: 20px; margin: 0 0 16px; }
+  input[type=text] {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+  button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: var(--primary);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  button.secondary { background: #e2e8f0; color: var(--text); }
+  .muted { color: var(--muted); font-size: 14px; }
+  .error { color: #dc2626; font-size: 14px; margin-top: 8px; }
+  .big-number { font-size: 56px; font-weight: 800; text-align: center; margin: 8px 0; }
+  .tag {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .tag.대기중 { background: var(--waiting); }
+  .tag.호출됨 { background: var(--called); }
+  .tag.진행중 { background: var(--progress); }
+  .tag.완료 { background: var(--done); }
+  .tag.노쇼, .tag.취소 { background: #94a3b8; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 10px 8px; border-bottom: 1px solid var(--border); text-align: left; font-size: 14px; }
+  .row-actions button { width: auto; padding: 6px 10px; font-size: 13px; margin-right: 4px; }
+  .stat-grid { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .stat { flex: 1; min-width: 80px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px; text-align: center; }
+  .stat .n { font-size: 22px; font-weight: 700; }
+  .stat .l { font-size: 12px; color: var(--muted); }
+  .brand-header { text-align: center; max-width: 480px; margin: 0 auto 20px; }
+  .brand-header .festival { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; color: var(--primary); text-transform: uppercase; }
+  .brand-header .booth { font-size: 15px; font-weight: 600; color: var(--muted); margin-top: 2px; }
+  .wide { max-width: 960px; }
+  .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  .dashboard-grid .card { max-width: none; margin: 0; }
+  @media (max-width: 640px) {
+    .dashboard-grid { grid-template-columns: 1fr; }
+  }
+</style>

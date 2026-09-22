@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <?!= include('Style'); ?>
+</head>
+<body>
+  <?!= include('Header'); ?>
+  <div class="card" id="authCard">
+    <h1>스태프 로그인</h1>
+    <input type="text" id="codeInput" placeholder="접근 코드 입력">
+    <button onclick="authenticate()">입장</button>
+    <div class="error" id="authError"></div>
+  </div>
+
+  <div id="dashboard" class="wide" style="display:none;margin:0 auto;">
+    <div class="dashboard-grid">
+      <div class="card">
+        <p class="muted" style="text-align:center;margin:0 0 4px;">현재 호출 번호</p>
+        <div class="big-number" id="currentNumber">-</div>
+        <p class="muted" id="waitingSummary" style="text-align:center;margin:0 0 16px;">대기 인원 -명</p>
+        <button onclick="callNext()">다음 순번 호출</button>
+        <div class="error" id="callError"></div>
+      </div>
+      <div class="card">
+        <div class="stat-grid" style="margin-bottom:0;">
+          <div class="stat"><div class="n" id="statWaiting">0</div><div class="l">대기중</div></div>
+          <div class="stat"><div class="n" id="statProgress">0</div><div class="l">진행중</div></div>
+          <div class="stat"><div class="n" id="statDone">0</div><div class="l">완료</div></div>
+          <div class="stat"><div class="n" id="statTotal">0</div><div class="l">총 접수</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="max-width:none;margin-top:16px;">
+      <table>
+        <thead><tr><th>번호</th><th>이름</th><th>상태</th><th>처리</th></tr></thead>
+        <tbody id="queueBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    var code = null;
+    var pollTimer = null;
+
+    function authenticate() {
+      code = document.getElementById('codeInput').value.trim();
+      document.getElementById('authError').textContent = '';
+      google.script.run
+        .withSuccessHandler(function (res) {
+          document.getElementById('authCard').style.display = 'none';
+          document.getElementById('dashboard').style.display = 'block';
+          render(res);
+          schedulePoll();
+        })
+        .withFailureHandler(function (err) {
+          document.getElementById('authError').textContent = err.message;
+        })
+        .getStaffQueue(code);
+    }
+
+    function schedulePoll() {
+      pollTimer = setTimeout(refresh, 5000 + Math.random() * 2000);
+    }
+
+    function refresh() {
+      google.script.run
+        .withSuccessHandler(function (res) { render(res); schedulePoll(); })
+        .withFailureHandler(function () { schedulePoll(); })
+        .getStaffQueue(code);
+    }
+
+    function render(res) {
+      document.getElementById('statWaiting').textContent = res.stats.waiting;
+      document.getElementById('statProgress').textContent = res.stats.inProgress;
+      document.getElementById('statDone').textContent = res.stats.done;
+      document.getElementById('statTotal').textContent = res.stats.total;
+
+      var active = res.entries.filter(function (e) {
+        return e.status === '호출됨' || e.status === '진행중';
+      }).sort(function (a, b) { return b.calledAt - a.calledAt; });
+      document.getElementById('currentNumber').textContent = active.length ? active[0].number : '-';
+      document.getElementById('waitingSummary').textContent = '대기 인원 ' + res.stats.waiting + '명';
+
+      var body = document.getElementById('queueBody');
+      body.innerHTML = '';
+      res.entries.forEach(function (e) {
+        var tr = document.createElement('tr');
+        var actions = '';
+        if (e.status === '호출됨') {
+          actions = '<button onclick="act(\'markInProgress\',' + e.number + ')">진행</button>' +
+                    '<button onclick="act(\'markNoShow\',' + e.number + ')">노쇼</button>';
+        } else if (e.status === '진행중') {
+          actions = '<button onclick="act(\'markDone\',' + e.number + ')">완료</button>';
+        } else if (e.status === '대기중') {
+          actions = '<button onclick="act(\'cancelEntry\',' + e.number + ')">취소</button>';
+        }
+        tr.innerHTML = '<td>' + e.number + '</td><td>' + e.name + '</td>' +
+          '<td><span class="tag ' + e.status + '">' + e.status + '</span></td>' +
+          '<td class="row-actions">' + actions + '</td>';
+        body.appendChild(tr);
+      });
+    }
+
+    function act(fn, number) {
+      google.script.run
+        .withSuccessHandler(refresh)
+        .withFailureHandler(function (err) { alert(err.message); })
+        [fn](code, number);
+    }
+
+    function callNext() {
+      document.getElementById('callError').textContent = '';
+      google.script.run
+        .withSuccessHandler(function (res) {
+          if (!res) document.getElementById('callError').textContent = '대기 중인 참가자가 없습니다.';
+          refresh();
+        })
+        .withFailureHandler(function (err) {
+          document.getElementById('callError').textContent = err.message;
+        })
+        .callNext(code);
+    }
+  </script>
+</body>
+</html>
