@@ -8,6 +8,7 @@ Google Sheets를 DB로, Apps Script 하나로 참가자 접수/스태프 대시�
 - `Index.html` — 참가자 접수 및 내 번호 확인 페이지
 - `Staff.html` — 스태프용 대기열 관리 대시보드
 - `Board.html` — 현장에 띄울 전광판 화면
+- `Header.html` — 축전/학교/부스 이름을 보여주는 공통 상단 헤더
 - `Style.html` — 공통 스타일
 - `appsscript.json` — 프로젝트 매니페스트 (웹앱 배포 설정)
 
@@ -18,9 +19,9 @@ Google Sheets를 DB로, Apps Script 하나로 참가자 접수/스태프 대시�
 
 2. **확장 프로그램 > Apps Script** 클릭해 스크립트 편집기를 엽니다.
 
-3. 편집기에 이 폴더의 5개 파일을 그대로 만들어 넣습니다.
+3. 편집기에 이 폴더의 6개 파일을 그대로 만들어 넣습니다.
    - `Code.gs` (기본 생성된 `Code.gs`에 덮어쓰기)
-   - `Index.html`, `Staff.html`, `Board.html`, `Style.html` (파일 > 새 파일 > HTML 로 각각 생성)
+   - `Index.html`, `Staff.html`, `Board.html`, `Header.html`, `Style.html` (파일 > 새 파일 > HTML 로 각각 생성)
    - 프로젝트 설정에서 `appsscript.json` 내용도 동일하게 맞춰줍니다 (편집기 좌측 톱니바퀴 > "appsscript.json 매니페스트 파일을 편집기에 표시" 체크 후 편집).
 
 4. **`initializeSheet` 함수를 한 번 실행**합니다.
