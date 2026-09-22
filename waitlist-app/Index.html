@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <?!= include('Style'); ?>
+</head>
+<body>
+  <div class="card" id="joinCard">
+    <h1>🧑‍💻 바이브 코딩 체험 접수</h1>
+    <p class="muted">인덕과학기술고등학교 · 노원수학문화축전</p>
+    <input type="text" id="nameInput" placeholder="이름을 입력해주세요" maxlength="20">
+    <button id="joinBtn" onclick="join()">접수하기</button>
+    <div class="error" id="joinError"></div>
+
+    <hr style="margin:20px 0;border:none;border-top:1px solid #e2e8f0;">
+    <p class="muted">이미 접수하셨나요?</p>
+    <input type="text" id="lookupInput" placeholder="대기번호 입력" inputmode="numeric">
+    <button class="secondary" onclick="lookup()">내 번호 조회</button>
+  </div>
+
+  <div class="card" id="statusCard" style="display:none;">
+    <h1>내 대기번호</h1>
+    <div class="big-number" id="myNumber">-</div>
+    <p style="text-align:center;"><span class="tag" id="statusTag">대기중</span></p>
+    <p class="muted" id="waitingInfo" style="text-align:center;"></p>
+    <button class="secondary" onclick="backToJoin()">처음으로</button>
+  </div>
+
+  <script>
+    var myNumber = null;
+    var pollTimer = null;
+
+    (function () {
+      try {
+        var saved = localStorage.getItem('myWaitNumber');
+        if (saved) { myNumber = Number(saved); showStatus(); }
+      } catch (e) {}
+    })();
+
+    function join() {
+      var name = document.getElementById('nameInput').value;
+      document.getElementById('joinError').textContent = '';
+      document.getElementById('joinBtn').disabled = true;
+      google.script.run
+        .withSuccessHandler(function (res) {
+          document.getElementById('joinBtn').disabled = false;
+          myNumber = res.number;
+          try { localStorage.setItem('myWaitNumber', String(myNumber)); } catch (e) {}
+          showStatus();
+        })
+        .withFailureHandler(function (err) {
+          document.getElementById('joinBtn').disabled = false;
+          document.getElementById('joinError').textContent = err.message;
+        })
+        .registerParticipant(name);
+    }
+
+    function lookup() {
+      var n = document.getElementById('lookupInput').value;
+      if (!n) return;
+      myNumber = Number(n);
+      try { localStorage.setItem('myWaitNumber', String(myNumber)); } catch (e) {}
+      showStatus();
+    }
+
+    function backToJoin() {
+      myNumber = null;
+      try { localStorage.removeItem('myWaitNumber'); } catch (e) {}
+      if (pollTimer) clearTimeout(pollTimer);
+      document.getElementById('statusCard').style.display = 'none';
+      document.getElementById('joinCard').style.display = 'block';
+    }
+
+    function showStatus() {
+      document.getElementById('joinCard').style.display = 'none';
+      document.getElementById('statusCard').style.display = 'block';
+      refreshStatus();
+    }
+
+    function refreshStatus() {
+      if (myNumber == null) return;
+      google.script.run
+        .withSuccessHandler(function (res) {
+          if (!res.found) {
+            document.getElementById('waitingInfo').textContent = '해당 번호를 찾을 수 없습니다.';
+          } else {
+            document.getElementById('myNumber').textContent = res.number;
+            var tag = document.getElementById('statusTag');
+            tag.textContent = res.status;
+            tag.className = 'tag ' + res.status;
+            if (res.status === '대기중') {
+              document.getElementById('waitingInfo').textContent =
+                '내 앞에 ' + res.waitingAhead + '명 대기 중 (예상 ' + res.estimatedWaitMin + '분)';
+            } else if (res.status === '호출됨') {
+              document.getElementById('waitingInfo').textContent = '지금 호출되었습니다! 스태프에게 와주세요.';
+            } else if (res.status === '진행중') {
+              document.getElementById('waitingInfo').textContent = '체험 진행 중입니다.';
+            } else if (res.status === '완료') {
+              document.getElementById('waitingInfo').textContent = '체험이 완료되었습니다. 감사합니다!';
+            } else {
+              document.getElementById('waitingInfo').textContent = '';
+            }
+          }
+          pollTimer = setTimeout(refreshStatus, 8000 + Math.random() * 4000);
+        })
+        .withFailureHandler(function () {
+          pollTimer = setTimeout(refreshStatus, 8000 + Math.random() * 4000);
+        })
+        .getStatus(myNumber);
+    }
+  </script>
+</body>
+</html>

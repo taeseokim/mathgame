@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <?!= include('Style'); ?>
+  <style>
+    body { background: #0f172a; color: #fff; display:flex; align-items:center; justify-content:center; height:100vh; margin:0; }
+    .board { text-align:center; }
+    .board .label { font-size: 24px; color:#94a3b8; margin-bottom:8px; }
+    .board .current { font-size: 160px; font-weight:900; line-height:1; }
+    .board .waiting { font-size: 28px; margin-top: 24px; color:#cbd5e1; }
+    .board .recent { margin-top: 24px; font-size: 18px; color:#64748b; }
+  </style>
+</head>
+<body>
+  <div class="board">
+    <div class="label">현재 호출 번호</div>
+    <div class="current" id="current">-</div>
+    <div class="waiting" id="waiting">대기 인원: -</div>
+    <div class="recent" id="recent"></div>
+  </div>
+  <script>
+    function refresh() {
+      google.script.run
+        .withSuccessHandler(function (res) {
+          document.getElementById('current').textContent = res.currentNumber || '-';
+          document.getElementById('waiting').textContent =
+            '대기 인원: ' + res.waitingCount + '명 (예상 ' + res.estimatedWaitMin + '분)';
+          document.getElementById('recent').textContent =
+            res.recentCalled.length ? '최근 호출: ' + res.recentCalled.join(', ') : '';
+          schedulePoll();
+        })
+        .withFailureHandler(schedulePoll)
+        .getBoardData();
+    }
+    function schedulePoll() {
+      setTimeout(refresh, 7000 + Math.random() * 2000);
+    }
+    refresh();
+  </script>
+</body>
+</html>
