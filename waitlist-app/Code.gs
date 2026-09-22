@@ -157,18 +157,29 @@ function getStatus(number) {
   };
 }
 
+function maskName_(name) {
+  name = (name || '').toString();
+  if (name.length <= 1) return name;
+  if (name.length === 2) return name.charAt(0) + '*';
+  return name.charAt(0) + new Array(name.length - 1).join('*') + name.charAt(name.length - 1);
+}
+
 function getBoardData() {
   var rows = getSnapshot_();
   var active = rows.filter(function (r) {
     return r.status === STATUS.CALLED || r.status === STATUS.IN_PROGRESS;
   }).sort(function (a, b) { return b.calledAt - a.calledAt; });
-  var waitingCount = countByStatus_(rows, STATUS.WAITING);
+  var waiting = rows.filter(function (r) {
+    return r.status === STATUS.WAITING;
+  }).sort(function (a, b) { return a.createdAt - b.createdAt; });
 
   return {
-    currentNumber: active.length ? active[0].number : null,
-    recentCalled: active.slice(0, 4).map(function (r) { return r.number; }),
-    waitingCount: waitingCount,
-    estimatedWaitMin: waitingCount * avgMinutes_()
+    current: active.length ? { number: active[0].number, name: maskName_(active[0].name) } : null,
+    waitingList: waiting.slice(0, 15).map(function (r) {
+      return { number: r.number, name: maskName_(r.name) };
+    }),
+    waitingCount: waiting.length,
+    estimatedWaitMin: waiting.length * avgMinutes_()
   };
 }
 
