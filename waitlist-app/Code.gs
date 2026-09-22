@@ -157,13 +157,6 @@ function getStatus(number) {
   };
 }
 
-function maskName_(name) {
-  name = (name || '').toString();
-  if (name.length <= 1) return name;
-  if (name.length === 2) return name.charAt(0) + '*';
-  return name.charAt(0) + new Array(name.length - 1).join('*') + name.charAt(name.length - 1);
-}
-
 function getBoardData() {
   var rows = getSnapshot_();
   var active = rows.filter(function (r) {
@@ -174,9 +167,9 @@ function getBoardData() {
   }).sort(function (a, b) { return a.createdAt - b.createdAt; });
 
   return {
-    current: active.length ? { number: active[0].number, name: maskName_(active[0].name) } : null,
+    current: active.length ? { number: active[0].number, name: active[0].name } : null,
     waitingList: waiting.slice(0, 15).map(function (r) {
-      return { number: r.number, name: maskName_(r.name) };
+      return { number: r.number, name: r.name };
     }),
     waitingCount: waiting.length,
     estimatedWaitMin: waiting.length * avgMinutes_()
